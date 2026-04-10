@@ -178,7 +178,7 @@ def inject_footer_shell(target_path):
                         sidebar_html += f'<a href="{url}" target="_blank" aria-label="{label}" style="color: inherit; transition: color 0.2s;">{svg}</a>'
                     sidebar_html += '</div></div>'
 
-                    full_footer = f'<footer class="tv-footer js-footer" style="padding: 80px 0; border-top: 1px solid #2a2e39; background: #131722;"><div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: row; gap: 80px; padding: 0 20px;">{sidebar_html}<div class="footerLinksContainer-hezxxKBJ"></div></div></footer>'
+                    full_footer = f'<footer class="tv-footer js-footer" style="padding: 80px 0; border-top: 1px solid #2a2e39; background: #000000;"><div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: row; gap: 80px; padding: 0 20px;">{sidebar_html}<div class="footerLinksContainer-hezxxKBJ"></div></div></footer>'
                     content = re.sub(r'<footer\b.*?>.*?</footer>', full_footer, content, flags=re.DOTALL | re.IGNORECASE)
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write(content)
