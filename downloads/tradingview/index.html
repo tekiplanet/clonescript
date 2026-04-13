@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <script id="clonescript-stability">
+    (function() {
+        console.log("[Clonescript] Freezer Shield v7 active. UI will be paralyzed in 5 seconds.");
+        
+        // 1. Initial Protection (from v6)
+        const isMajorElement = (el) => {
+            if (!el) return false;
+            return el === document.body || el.id === 'react-root' || el.hasAttribute('data-reactroot') || el.tagName === 'MAIN' || el.tagName === 'SECTION';
+        };
+
+        const originalDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML') || 
+                                   Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerHTML');
+        if (originalDescriptor && originalDescriptor.set) {
+            Object.defineProperty(Element.prototype, 'innerHTML', {
+                set: function(value) {
+                    if ((value === '' || value.length < 50) && isMajorElement(this)) {
+                        console.warn("[Clonescript] Blocked attempt to clear UI.");
+                        return;
+                    }
+                    return originalDescriptor.set.call(this, value);
+                }
+            });
+        }
+
+        // 2. THE FREEZER: Paralytic Strike after 5 seconds
+        setTimeout(() => {
+            console.warn("[Clonescript] 5s elapsed. Paralyzing UI logic to prevent collapse...");
+            
+            // Kill all Timers
+            window.setTimeout = function() { return 0; };
+            window.setInterval = function() { return 0; };
+            window.requestAnimationFrame = function() { return 0; };
+            
+            // Kill all Observers
+            MutationObserver.prototype.observe = function() { return; };
+            
+            // Kill all Network
+            window.fetch = function() { return new Promise(() => {}); };
+            XMLHttpRequest.prototype.send = function() { return; };
+            XMLHttpRequest.prototype.open = function() { return; };
+            
+            console.log("[Clonescript] UI Logic is now frozen. Site should be stable.");
+        }, 5000);
+
+        // 3. Persistence Mocks
+        window.WebSocket = function() { this.readyState = 1; this.send = ()=>{}; this.close = ()=>{}; };
+        window.WebSocket.prototype = { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 };
+
+        try {
+            Object.defineProperty(navigator, 'serviceWorker', {
+                get: () => ({ register: () => new Promise(()=>{}), getRegistration: () => Promise.resolve(null), getRegistrations: () => Promise.resolve([]), addEventListener: ()=>{} })
+            });
+        } catch(e) {}
+
+        window.addEventListener('unhandledrejection', (e) => { e.stopImmediatePropagation(); e.preventDefault(); });
+        window.onerror = () => true;
+    })();
+    </script>
+    
+    
+    <meta http-equiv="refresh" content="0; url=www.tradingview.com/brokerage-integration/index.html">
+    <title>Redirecting to www.tradingview.com</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; }
+        a { color: #007bff; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Project: www.tradingview.com</h2>
+        <p>Your clone is ready. If you are not redirected automatically,</p>
+        <p><a href="www.tradingview.com/brokerage-integration/index.html">Click here to open the homepage</a></p>
+    </div>
+</body>
+</html>
