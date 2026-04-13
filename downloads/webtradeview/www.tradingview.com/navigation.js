@@ -108,6 +108,15 @@
         ]
     };
 
+    // Define global callback for Google Translate
+    window.googleTranslateElementInit = function() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    };
+
     function injectShell() {
         // Inject Google Font
         if (!document.getElementById('tv-nav-font')) {
@@ -122,9 +131,17 @@
         if (!document.getElementById('jivo-chat-widget')) {
             const jivo = document.createElement('script');
             jivo.id = 'jivo-chat-widget';
-            jivo.src = '//code.jivosite.com/widget/GHQzWREEq6';
+            jivo.src = 'https://code.jivosite.com/widget/GHQzWREEq6';
             jivo.async = true;
             document.head.appendChild(jivo);
+        }
+
+        // Inject Google Translate API
+        if (!document.getElementById('google-translate-api')) {
+            const gt = document.createElement('script');
+            gt.id = 'google-translate-api';
+            gt.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            document.head.appendChild(gt);
         }
 
         const css = `
@@ -280,6 +297,29 @@
             .tv-social-menu-item.whatsapp { border-left: 4px solid #25D366; }
             .tv-social-menu-item.telegram { border-left: 4px solid #0088cc; }
             .tv-social-menu-item svg { width: 20px; height: 20px; }
+
+            /* Google Translate Skinning (Native Proxy) */
+            .tv-header__area--lang { position: relative; display: flex; align-items: center; gap: 20px; }
+            .tv-header__lang-proxy { display: flex; align-items: center; gap: 8px; cursor: pointer; transition: opacity 0.2s; }
+            .tv-header__lang-proxy:hover { opacity: 0.8; }
+            
+            #google_translate_element { 
+                position: absolute !important; top: 0 !important; left: 0 !important; 
+                width: 70px !important; height: 100% !important; 
+                opacity: 0 !important; cursor: pointer !important; z-index: 10 !important;
+                overflow: hidden !important;
+            }
+            .goog-te-gadget-simple { width: 100% !important; height: 100% !important; border: none !important; margin: 0 !important; }
+
+            /* Hide the ugly top bar injected by Google */
+            .goog-te-banner-frame { display: none !important; visibility: hidden !important; }
+            body { top: 0 !important; }
+            
+            /* Suppress ONLY the Legacy Language Button (Anti-Double) */
+            .js-header-language-button, 
+            .tv-header__language-button { 
+                display: none !important; 
+            }
         `;
         const style = document.createElement('style');
         style.innerHTML = css;
@@ -331,6 +371,32 @@
                 </li>
             `;
         });
+        
+        // Proxy for the language switcher only
+        const langArea = document.querySelector('.tv-header__area--user') || container.parentElement;
+        if (langArea && !document.getElementById('tv-lang-managed')) {
+            const proxy = document.createElement('div');
+            proxy.id = 'tv-lang-managed';
+            proxy.className = 'tv-header__area--lang';
+            proxy.style.display = 'inline-flex';
+            proxy.style.alignItems = 'center';
+            proxy.style.position = 'relative';
+            proxy.style.marginRight = '12px';
+            
+            proxy.innerHTML = `
+                <div class="tv-header__lang-proxy">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2C7.37258 2 2 7.37258 2 14C2 20.6274 7.37258 26 14 26C20.6274 26 26 20.6274 26 14C26 7.37258 20.6274 2 14 2Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M2.5 14H25.5" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M14 2.5C17.5 2.5 19.5 8 19.5 14C19.5 20 17.5 25.5 14 25.5C10.5 25.5 8.5 20 8.5 14C8.5 8 10.5 2.5 14 2.5Z" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span style="font-weight: 600; font-size: 14px; margin-left: 8px; color: ${COLORS.text}">EN</span>
+                </div>
+                <div id="google_translate_element"></div>
+            `;
+            langArea.insertBefore(proxy, langArea.firstChild);
+        }
+
         container.innerHTML = html;
         
         // Handle Logo Correctly
